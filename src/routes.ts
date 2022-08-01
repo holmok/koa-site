@@ -1,7 +1,6 @@
-import { User } from './services'
 import KoaRouter from '@koa/router'
 import Validator from 'validator'
-import { ServerContext, ServerContextState } from './middleware'
+import { AuthenticatedUser, ServerContext, ServerContextState } from './middleware'
 
 export default function registerRoutes (): KoaRouter<ServerContextState, ServerContext> {
   const router = new KoaRouter<ServerContextState, ServerContext>()
@@ -113,7 +112,7 @@ export default function registerRoutes (): KoaRouter<ServerContextState, ServerC
   router.get('/', async (ctx) => {
     const status = ctx.state.getValue('status') ?? []
     const template = ctx.state.authenticated ? 'index-user' : 'index-public'
-    const title = ctx.state.authenticated ? `home for ${(ctx.state.user as User).username}` : 'home'
+    const title = ctx.state.authenticated ? `home for ${(ctx.state.user as AuthenticatedUser).username}` : 'home'
     ctx.render(template, { title, status })
   })
 

@@ -18,8 +18,8 @@ const debug = Debug('koa-site:middleware')
 
 const uniquey = new Uniquey()
 
-function createAnonymousToken (jwt: JwtOptions, ctx: Koa.ParameterizedContext<ServerContextState>): { type: string, id: string } {
-  const anonymous = { type: 'anonymous', id: uniquey.create() }
+function createAnonymousToken (jwt: JwtOptions, ctx: Koa.ParameterizedContext<ServerContextState>): AnonymousUser {
+  const anonymous: AnonymousUser = { type: 'anonymous', id: uniquey.create() }
   const bearer = JWT.sign(anonymous, jwt.secret, { expiresIn: jwt.expiresIn })
   ctx.state.user = anonymous
   ctx.cookies.set(jwt.cookieName, bearer, { signed: true, expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) })
@@ -27,10 +27,32 @@ function createAnonymousToken (jwt: JwtOptions, ctx: Koa.ParameterizedContext<Se
 }
 
 export function createUserToken (user: User, jwt: JwtOptions, ctx: Koa.ParameterizedContext<ServerContextState>): void {
-  const payload = { type: 'user', ...user }
+  const payload: AuthenticatedUser = {
+    type: 'user',
+    id: user.id,
+    username: user.username,
+    lastLogin: user.lastLogin,
+    created: user.created,
+    updated: user.updated
+  }
+
   const bearer = JWT.sign(payload, jwt.secret, { expiresIn: jwt.expiresIn })
   ctx.state.user = payload
   ctx.cookies.set(jwt.cookieName, bearer, { signed: true, expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) })
+}
+
+export interface AuthenticatedUser {
+  type: string
+  id: number
+  username: string
+  lastLogin: Date | null
+  created: Date
+  updated: Date | null
+}
+
+interface AnonymousUser {
+  type: string
+  id: string
 }
 
 export type ServerContextState = Koa.DefaultState & {
@@ -39,7 +61,7 @@ export type ServerContextState = Koa.DefaultState & {
   environment: string
   dev: boolean
   host: string
-  user: User | { type: string, id: string }
+  user: AuthenticatedUser | AnonymousUser
   authenticated: boolean
   services: ServiceProviders
   getValue: (key: string) => any
@@ -65,19 +87,6 @@ export default function registerMiddleware (app: Koa<ServerContextState, ServerC
 
   debug('Registering logger middleware')
   app.use(KoaLogger({ logger }))
-
-  debug('Registering authenticate middleware')
-  app.use(async (ctx, next) => {
-    ctx.state.setUserToken = (user: User) => {
-      const jwt = config.get<JwtOptions>('jwt')
-      createUserToken(user, jwt, ctx)
-    }
-    ctx.state.logout = () => {
-      const jwt = config.get<JwtOptions>('jwt')
-      createAnonymousToken(jwt, ctx)
-    }
-    await next()
-  })
 
   debug('Registering state getter/setter')
   app.use(async (ctx, next) => {
@@ -108,8 +117,15 @@ export default function registerMiddleware (app: Koa<ServerContextState, ServerC
   app.keys = config.get<string[]>('keys')
   const jwt = config.get<JwtOptions>('jwt')
   app.use(async (ctx, next) => {
+    ctx.state.setUserToken = (user: User) => {
+      createUserToken(user, jwt, ctx)
+    }
+    ctx.state.logout = () => {
+      createAnonymousToken(jwt, ctx)
+    }
+
     const token = ctx.cookies.get(jwt.cookieName)
-    let payload: any | undefined
+    let payload: AuthenticatedUser | AnonymousUser | any
     if (token == null) {
       payload = createAnonymousToken(jwt, ctx)
     } else {
