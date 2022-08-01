@@ -1,0 +1,7 @@
+{{if status && status.length > 0}}
+<ul class="status">
+{{each status}}
+    <li><span>{{$value}}<span></li>
+{{/each}}
+</ul>
+{{/if}}

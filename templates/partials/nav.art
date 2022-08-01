@@ -1,0 +1,8 @@
+<a href="/">home</a> &middot;
+<a href="/about">about</a> &middot;
+{{ if authenticated }}
+<a href="/logout">logout</a>
+{{ else }}
+<a href="/register">register</a> &middot;
+<a href="/login">log in</a>
+{{ /if }}

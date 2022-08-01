@@ -1,0 +1,9 @@
+{{extend '../layouts/basic.art'}}
+
+{{block 'content'}}
+<h1>Ooops!</h1>
+<p><strong>{{message}}</strong> <em>[{{error.status}}]</em></p>
+{{ if dev }}
+<pre>{{error.stack}}</pre>
+{{ /if }}
+{{/block}}

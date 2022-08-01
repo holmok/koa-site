@@ -1,0 +1,5 @@
+{{extend '../layouts/basic.art'}}
+
+{{block 'content'}}
+<p>about page</p>
+{{/block}}

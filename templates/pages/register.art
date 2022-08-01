@@ -1,0 +1,32 @@
+{{extend '../layouts/basic.art'}}
+
+{{block 'content'}}
+<div class="row">
+<div class="six columns offset-by-three">
+
+<h1>Register</h1>
+<p>Register for free!  <em>All feilds are required.</em></p>
+
+{{include '../partials/errors.art'}}
+
+<form method="post">
+
+<label for="email">Email</label>
+<input class="u-full-width" type="email" placeholder="your@email.com" value="{{form.email}}" id="email" name="email">
+
+<label for="username">Username</label>
+<input class="u-full-width" type="text" placeholder="your username" value="{{form.username}}" id="username" name="username">
+
+<label for="password">Password</label>
+<input class="u-full-width" type="password" id="password" name="password">
+
+<label for="confirmPassword">Confirm Password</label>
+<input class="u-full-width" type="password" id="confirmPassword" name="confirmPassword">
+
+ <input class="button-primary u-full-width" type="submit" value="Register">
+
+</form>
+
+</div>
+</div>
+{{/block}}

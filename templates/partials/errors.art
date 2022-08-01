@@ -1,0 +1,8 @@
+
+{{if errors && errors.length > 0}}
+<ul class="errors">
+{{each errors}}
+    <li><span>{{$value}}<span></li>
+{{/each}}
+</ul>
+{{/if}}
